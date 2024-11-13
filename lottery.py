@@ -99,73 +99,14 @@ class LotterySystem:
         conn.commit()
         conn.close()
 
-def main():
-    lottery = LotterySystem()
-    
-    while True:
-        print("\n=== 抽獎系統 ===")
-        print("1. 新增參與者")
-        print("2. 批次新增參與者（用空格分隔）")
-        print("3. 顯示所有參與者")
-        print("4. 抽獎")
-        print("5. 重置抽獎狀態")
-        print("6. 離開")
-        
-        choice = input("\n請選擇操作 (1-6): ")
-        
-        if choice == "1":
-            name = input("請輸入參與者姓名: ")
-            if lottery.add_participant(name):
-                print(f"成功新增 {name}")
-            else:
-                print("新增失敗，該參與者可能已存在")
-        
-        elif choice == "2":
-            names = input("請輸入多個參與者姓名（用空格分隔）: ")
-            successful, failed = lottery.add_multiple_participants(names)
-            
-            if successful:
-                print("\n成功新增:")
-                for name in successful:
-                    print(f"- {name}")
-            
-            if failed:
-                print("\n新增失敗（已存在）:")
-                for name in failed:
-                    print(f"- {name}")
-            
-            if not successful and not failed:
-                print("未輸入任何有效名稱")
-        
-        elif choice == "3":
-            participants = lottery.get_all_participants()
-            print("\n所有參與者:")
-            for i, name in enumerate(participants, 1):
-                print(f"{i}. {name}")
-        
-        elif choice == "4":
-            try:
-                count = int(input("請輸入要抽出的人數: "))
-                winners = lottery.draw_winners(count)
-                if winners:
-                    print("\n抽獎結果:")
-                    for i, winner in enumerate(winners, 1):
-                        print(f"{i}. {winner}")
-                else:
-                    print("沒有合格的參與者可供抽選")
-            except ValueError:
-                print("請輸入有效的數字")
-        
-        elif choice == "5":
-            lottery.reset_selections()
-            print("已重置所有抽獎狀態")
-        
-        elif choice == "6":
-            print("感謝使用，再見！")
-            break
-        
-        else:
-            print("無效的選擇，請重試")
-
-if __name__ == "__main__":
-    main()
+    def clear_all_participants(self) -> bool:
+        """Clear all participants from the database."""
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            cursor.execute('DELETE FROM participants')
+            conn.commit()
+            conn.close()
+            return True
+        except Exception:
+            return False

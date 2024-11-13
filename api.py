@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from lottery import LotterySystem
 import os
+import sqlite3
 
 app = Flask(__name__)
 CORS(app)  # 啟用 CORS 支援跨域請求
@@ -45,6 +46,18 @@ def draw():
 def reset():
     lottery.reset_selections()
     return jsonify({'success': True})
+
+@app.route('/clear_all', methods=['POST'])
+def clear_all():
+    """清除所有參與者"""
+    try:
+        success = lottery.clear_all_participants()
+        if success:
+            return jsonify({'success': True, 'message': '已清除所有參與者'})
+        else:
+            return jsonify({'success': False, 'error': '清除參與者時發生錯誤'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)

@@ -1,163 +1,100 @@
-# 抽獎系統
-
-這是一個網頁版抽獎系統，採用前後端分離架構，前端可部署在 Netlify，後端可部署在支援 Python 的雲端平台。
+# 抽獎系統 - 部署指南
 
 ## 系統架構
 
-- 前端：純靜態網頁（HTML + JavaScript）
-- 後端：Flask API 服務
+前後端分離架構：
+- 前端：純靜態網頁（Netlify）
+- 後端：Flask API（Render）
 - 資料庫：SQLite
 
-## 部署說明
+## 部署步驟
 
-### 前端部署（Netlify）
+### 1. GitHub 倉庫準備
 
-1. **準備工作**
-   - 註冊 [Netlify](https://www.netlify.com/) 帳號
-   - 安裝 Git（如果尚未安裝）
-
-2. **部署步驟**
-   ```bash
-   # 1. 建立新的 Git 倉庫
-   git init
-   
-   # 2. 只添加前端相關文件
-   git add frontend/*
-   
-   # 3. 提交更改
-   git commit -m "Initial commit"
-   
-   # 4. 在 Netlify 上：
-   # - 點擊 "New site from Git"
-   # - 選擇你的 Git 倉庫
-   # - 設定部署配置：
-   #   - Build command: 留空
-   #   - Publish directory: frontend
-   # - 點擊 "Deploy site"
+1. 建立 GitHub 倉庫
+2. 上傳以下檔案：
+   ```
+   lottery/
+   ├── api.py
+   ├── lottery.py
+   ├── requirements.txt
+   └── frontend/
+       └── index.html
    ```
 
-3. **部署完成後**
-   - Netlify 會提供一個網址（例如：https://your-site.netlify.app）
-   - 可以在網站設定中更改為自訂網域
+### 2. 部署後端 (Render)
 
-### 後端部署（Render）
+1. 登入 [Render](https://render.com/)
+2. 建立新的 Web Service
+3. 連接 GitHub 倉庫
+4. 配置設定：
+   - Name: lottery-backend
+   - Runtime: Python
+   - Branch: main
+   - Build Command: `pip install -r requirements.txt`
+   - Start Command: `gunicorn api:app`
+   - Region: 選擇靠近你的地區
+5. 點擊 "Create Web Service"
+6. 等待部署完成
+7. 記下生成的 URL（例如：https://lottery-backend.onrender.com）
 
-1. **準備工作**
-   - 註冊 [Render](https://render.com/) 帳號
-   - 將專案推送到 GitHub
+### 3. 部署前端 (Netlify)
 
-2. **部署步驟**
-   ```bash
-   # 1. 在 Render 上：
-   # - 點擊 "New Web Service"
-   # - 選擇你的 GitHub 倉庫
-   # - 設定部署配置：
-   #   - Runtime: Python 3
-   #   - Build Command: pip install -r requirements.txt
-   #   - Start Command: gunicorn api:app
-   ```
+1. 登入 [Netlify](https://www.netlify.com/)
+2. 點擊 "Add new site" > "Import an existing project"
+3. 連接 GitHub 倉庫
+4. 配置設定：
+   - Base directory: `lottery/frontend`
+   - Build command: 留空
+   - Publish directory: `.`
+5. 點擊 "Deploy site"
+6. 等待部署完成
+7. 記下生成的網址（例如：https://lotterysiemens.netlify.app）
 
-3. **環境設定**
-   - 確保在 Render 的環境變數中設定：
-     - `PYTHON_VERSION`: 3.9
-     - `PORT`: 5000
+### 4. 連接前後端
 
-### 連接前後端
+1. 訪問 Netlify 部署的網站
+2. 在 API 設定區塊輸入 Render 的後端 URL
+3. 點擊 "連接後端服務"
 
-1. **獲取後端 API 網址**
-   - 在 Render 的服務頁面找到你的 API 網址
-   - 格式類似：https://your-api.onrender.com
+## 功能說明
 
-2. **設定前端 API 連接**
-   - 第一次訪問網站時，會要求輸入 API 網址
-   - 輸入 Render 提供的 API 網址
-   - 系統會將設定儲存在瀏覽器中
+### 主要功能
+- 新增參與者（支持批次）
+- 抽獎
+- 重置抽獎狀態
+- 清除所有參與者
 
-## 本地開發說明
-
-### 後端開發
-
-1. **安裝依賴**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-2. **運行後端服務**
-   ```bash
-   python api.py
-   ```
-   服務會在 http://localhost:5000 運行
-
-### 前端開發
-
-1. **使用任何靜態檔案伺服器**
-   例如使用 Python 的內建伺服器：
-   ```bash
-   cd frontend
-   python -m http.server 8000
-   ```
-   前端會在 http://localhost:8000 運行
-
-2. **設定本地 API 網址**
-   - 訪問前端網頁
-   - 輸入本地 API 網址：http://localhost:5000
-
-## 系統功能
-
-- 批次輸入多個參與者（空格分隔）
-- 即時顯示參與者列表
-- 指定抽獎人數進行抽獎
-- 顯示抽獎結果
-- 一鍵重置功能
-
-## 檔案結構
-
-```
-lottery/
-├── frontend/               # 前端檔案（部署到 Netlify）
-│   ├── index.html         # 主要網頁
-│   └── netlify.toml       # Netlify 配置
-├── api.py                 # 後端 API 服務
-├── lottery.py             # 抽獎核心邏輯
-├── requirements.txt       # Python 依賴
-└── README.md             # 說明文件
-```
-
-## 注意事項
-
-1. **CORS 設定**
-   - 後端已啟用 CORS 支援
-   - 允許所有來源的請求
-
-2. **資料持久化**
-   - 資料儲存在 SQLite 資料庫
-   - Render 會在每次部署時重置檔案系統
-   - 建議使用外部資料庫服務（如需要永久儲存）
-
-3. **安全性考慮**
-   - 前端儲存 API 網址在 localStorage
-   - 建議在正式環境中加入適當的認證機制
+### 使用注意事項
+- 第一次使用需要設定 API 網址
+- API 網址會儲存在瀏覽器 localStorage
+- 支援多人同時使用
 
 ## 故障排除
 
-1. **無法連接到 API**
-   - 確認 API 網址是否正確
-   - 檢查後端服務是否正常運行
-   - 確認瀏覽器 Console 中的錯誤訊息
+1. API 連接失敗
+   - 確認 Render 後端服務正在運行
+   - 檢查 API 網址是否正確
+   - 查看瀏覽器 Console 錯誤訊息
 
-2. **部署問題**
-   - Netlify：檢查部署日誌
-   - Render：查看建置和運行日誌
-
-3. **資料不同步**
+2. 資料不同步
    - 清除瀏覽器快取
-   - 重新載入頁面
+   - 重新整理頁面
    - 檢查網路請求狀態
 
-## 技術支援
+## 安全性提醒
 
-如遇到技術問題：
-1. 檢查瀏覽器 Console 的錯誤訊息
-2. 查看後端服務的日誌
-3. 確認網路連接狀態
-4. 檢查 API 網址設定
+- 後端已啟用 CORS
+- 資料儲存在 SQLite
+- Render 免費方案可能有休眠機制
+
+## 技術棧
+
+- 前端：HTML, JavaScript, Bootstrap
+- 後端：Python, Flask
+- 部署：Render, Netlify
+- 資料庫：SQLite
+
+## 開發者
+
+歡迎提出 issues 和 pull requests！
