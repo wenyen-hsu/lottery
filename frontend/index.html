@@ -32,13 +32,26 @@
         }
         .success { background-color: #d4edda; }
         .error { background-color: #f8d7da; }
-        #apiEndpoint {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(0,0,0,0.1);
+        #apiSettings {
+            background-color: #e9ecef;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            border: 2px solid #dee2e6;
+        }
+        .api-status {
+            margin-top: 10px;
             padding: 10px;
             border-radius: 5px;
+            display: none;
+        }
+        .api-connected {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .api-disconnected {
+            background-color: #f8d7da;
+            color: #721c24;
         }
     </style>
 </head>
@@ -49,12 +62,16 @@
         <!-- API 設定 -->
         <div class="card mb-4" id="apiSettings">
             <div class="card-body">
-                <h5 class="card-title">API 設定</h5>
+                <h5 class="card-title">⚠️ 請先設定 API</h5>
+                <p class="card-text">第一次使用需要設定後端服務位址</p>
                 <div class="mb-3">
                     <label for="apiUrl" class="form-label">API 網址</label>
-                    <input type="text" class="form-control" id="apiUrl" placeholder="例如：https://your-api.render.com">
+                    <input type="text" class="form-control" id="apiUrl" 
+                           placeholder="請輸入：https://lottery-1-b79x.onrender.com">
+                    <div class="form-text">複製上方網址貼上即可</div>
                 </div>
-                <button onclick="saveApiUrl()" class="btn btn-primary">儲存</button>
+                <button onclick="saveApiUrl()" class="btn btn-primary">連接後端服務</button>
+                <div id="apiStatus" class="api-status mt-3"></div>
             </div>
         </div>
 
@@ -95,18 +112,36 @@
         </div>
     </div>
 
-    <div id="apiEndpoint"></div>
-
     <script>
-        // 儲存 API URL 到 localStorage
+        // 檢查 API 連接狀態
+        function checkApiConnection(apiUrl) {
+            fetch(`${apiUrl}/participants`)
+                .then(response => response.json())
+                .then(data => {
+                    const statusDiv = document.getElementById('apiStatus');
+                    statusDiv.style.display = 'block';
+                    statusDiv.className = 'api-status api-connected';
+                    statusDiv.innerHTML = '✅ 後端服務連接成功！';
+                    document.getElementById('apiSettings').style.display = 'none';
+                    loadParticipants();
+                })
+                .catch(error => {
+                    const statusDiv = document.getElementById('apiStatus');
+                    statusDiv.style.display = 'block';
+                    statusDiv.className = 'api-status api-disconnected';
+                    statusDiv.innerHTML = '❌ 連接失敗，請確認網址是否正確';
+                });
+        }
+
+        // 儲存 API URL
         function saveApiUrl() {
             const apiUrl = document.getElementById('apiUrl').value.trim();
-            if (apiUrl) {
-                localStorage.setItem('apiUrl', apiUrl);
-                document.getElementById('apiEndpoint').textContent = `API: ${apiUrl}`;
-                document.getElementById('apiSettings').style.display = 'none';
-                loadParticipants(); // 重新載入參與者列表
+            if (!apiUrl) {
+                alert('請輸入 API 網址');
+                return;
             }
+            localStorage.setItem('apiUrl', apiUrl);
+            checkApiConnection(apiUrl);
         }
 
         // 從 localStorage 獲取 API URL
@@ -114,33 +149,12 @@
             const apiUrl = localStorage.getItem('apiUrl');
             if (apiUrl) {
                 document.getElementById('apiUrl').value = apiUrl;
-                document.getElementById('apiEndpoint').textContent = `API: ${apiUrl}`;
                 document.getElementById('apiSettings').style.display = 'none';
+                checkApiConnection(apiUrl);
                 return apiUrl;
             }
             document.getElementById('apiSettings').style.display = 'block';
             return null;
-        }
-
-        // 載入參與者列表
-        function loadParticipants() {
-            const apiUrl = getApiUrl();
-            if (!apiUrl) return;
-
-            fetch(`${apiUrl}/participants`)
-                .then(response => response.json())
-                .then(data => {
-                    const participantList = document.getElementById('participantList');
-                    participantList.innerHTML = `
-                        <ul class="list-group">
-                            ${data.participants.map(p => `<li class="list-group-item">${p}</li>`).join('')}
-                        </ul>
-                    `;
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('無法連接到伺服器');
-                });
         }
 
         function addParticipants() {
@@ -173,13 +187,33 @@
                     alert(message);
                 }
 
-                loadParticipants(); // 重新載入參與者列表
+                loadParticipants();
                 document.getElementById('names').value = '';
             })
             .catch(error => {
                 console.error('Error:', error);
                 alert('無法連接到伺服器');
             });
+        }
+
+        function loadParticipants() {
+            const apiUrl = getApiUrl();
+            if (!apiUrl) return;
+
+            fetch(`${apiUrl}/participants`)
+                .then(response => response.json())
+                .then(data => {
+                    const participantList = document.getElementById('participantList');
+                    participantList.innerHTML = `
+                        <ul class="list-group">
+                            ${data.participants.map(p => `<li class="list-group-item">${p}</li>`).join('')}
+                        </ul>
+                    `;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('無法連接到伺服器');
+                });
         }
 
         function drawWinners() {
@@ -248,7 +282,6 @@
         // 初始化
         document.addEventListener('DOMContentLoaded', () => {
             getApiUrl();
-            loadParticipants();
         });
     </script>
 </body>
