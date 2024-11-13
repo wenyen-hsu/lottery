@@ -1,145 +1,163 @@
 # 抽獎系統
 
-這是一個網頁版抽獎系統，支持添加參與者、抽獎和重置功能。使用者可以通過網頁瀏覽器直接使用，無需安裝任何軟體。
+這是一個網頁版抽獎系統，採用前後端分離架構，前端可部署在 Netlify，後端可部署在支援 Python 的雲端平台。
 
-## 功能特點
+## 系統架構
 
-- 網頁介面，方便使用
-- 支援批次輸入多個參與者（使用空格分隔）
-- 指定抽選人數進行抽獎
-- 避免重複抽中同一人
-- 支持重置抽獎狀態
-- 使用 SQLite 數據庫儲存資料
+- 前端：純靜態網頁（HTML + JavaScript）
+- 後端：Flask API 服務
+- 資料庫：SQLite
 
-## 使用方式
+## 部署說明
 
-### 方式 1：直接訪問網站（適合一般使用者）
+### 前端部署（Netlify）
 
-如果系統已部署到伺服器，您只需要：
-1. 使用瀏覽器訪問系統網址
-2. 直接在網頁上操作即可
+1. **準備工作**
+   - 註冊 [Netlify](https://www.netlify.com/) 帳號
+   - 安裝 Git（如果尚未安裝）
 
-無需安裝任何軟體，類似訪問一般網站。
+2. **部署步驟**
+   ```bash
+   # 1. 建立新的 Git 倉庫
+   git init
+   
+   # 2. 只添加前端相關文件
+   git add frontend/*
+   
+   # 3. 提交更改
+   git commit -m "Initial commit"
+   
+   # 4. 在 Netlify 上：
+   # - 點擊 "New site from Git"
+   # - 選擇你的 Git 倉庫
+   # - 設定部署配置：
+   #   - Build command: 留空
+   #   - Publish directory: frontend
+   # - 點擊 "Deploy site"
+   ```
 
-### 方式 2：本地運行（適合開發者）
+3. **部署完成後**
+   - Netlify 會提供一個網址（例如：https://your-site.netlify.app）
+   - 可以在網站設定中更改為自訂網域
 
-1. 安裝 Python 3.6 或更高版本
-2. 安裝依賴：
+### 後端部署（Render）
+
+1. **準備工作**
+   - 註冊 [Render](https://render.com/) 帳號
+   - 將專案推送到 GitHub
+
+2. **部署步驟**
+   ```bash
+   # 1. 在 Render 上：
+   # - 點擊 "New Web Service"
+   # - 選擇你的 GitHub 倉庫
+   # - 設定部署配置：
+   #   - Runtime: Python 3
+   #   - Build Command: pip install -r requirements.txt
+   #   - Start Command: gunicorn api:app
+   ```
+
+3. **環境設定**
+   - 確保在 Render 的環境變數中設定：
+     - `PYTHON_VERSION`: 3.9
+     - `PORT`: 5000
+
+### 連接前後端
+
+1. **獲取後端 API 網址**
+   - 在 Render 的服務頁面找到你的 API 網址
+   - 格式類似：https://your-api.onrender.com
+
+2. **設定前端 API 連接**
+   - 第一次訪問網站時，會要求輸入 API 網址
+   - 輸入 Render 提供的 API 網址
+   - 系統會將設定儲存在瀏覽器中
+
+## 本地開發說明
+
+### 後端開發
+
+1. **安裝依賴**
    ```bash
    pip install -r requirements.txt
    ```
-3. 運行應用：
+
+2. **運行後端服務**
    ```bash
-   python app.py
+   python api.py
    ```
-4. 打開瀏覽器訪問：http://localhost:5000
+   服務會在 http://localhost:5000 運行
 
-### 方式 3：使用 Docker 部署（適合系統管理員）
+### 前端開發
 
-1. 建立 Docker 映像：
+1. **使用任何靜態檔案伺服器**
+   例如使用 Python 的內建伺服器：
    ```bash
-   docker build -t lottery-system .
+   cd frontend
+   python -m http.server 8000
    ```
+   前端會在 http://localhost:8000 運行
 
-2. 運行容器：
-   ```bash
-   docker run -d -p 80:5000 lottery-system
-   ```
+2. **設定本地 API 網址**
+   - 訪問前端網頁
+   - 輸入本地 API 網址：http://localhost:5000
 
-3. 訪問網站：http://localhost
+## 系統功能
 
-## 系統部署說明
+- 批次輸入多個參與者（空格分隔）
+- 即時顯示參與者列表
+- 指定抽獎人數進行抽獎
+- 顯示抽獎結果
+- 一鍵重置功能
 
-### 1. 使用 Docker 部署到伺服器
+## 檔案結構
 
-1. 在伺服器上安裝 Docker
-2. 上傳專案檔案到伺服器
-3. 建立並運行容器：
-   ```bash
-   docker build -t lottery-system .
-   docker run -d -p 80:5000 --restart always lottery-system
-   ```
-
-### 2. 使用雲端平台部署
-
-#### Heroku 部署步驟
-1. 安裝 Heroku CLI
-2. 登入 Heroku：
-   ```bash
-   heroku login
-   ```
-3. 創建應用：
-   ```bash
-   heroku create your-lottery-app
-   ```
-4. 部署：
-   ```bash
-   git push heroku main
-   ```
-
-#### Railway/Render 等平台
-1. 連接 GitHub 倉庫
-2. 選擇本專案
-3. 平台會自動識別並部署
-
-## 網頁介面使用說明
-
-1. **新增參與者**
-   - 在輸入框中輸入名字
-   - 多個名字用空格分隔
-   - 點擊「新增」按鈕
-
-2. **進行抽獎**
-   - 輸入要抽出的人數
-   - 點擊「抽獎」按鈕
-   - 系統會顯示中獎名單
-
-3. **重置抽獎**
-   - 點擊「重置」按鈕
-   - 所有人都可以重新被抽中
-
-4. **查看參與者**
-   - 頁面右側會顯示所有參與者名單
-   - 名單會即時更新
-
-## 系統需求
-
-### 伺服器需求
-- CPU: 1 核心以上
-- 記憶體: 512MB 以上
-- 硬碟: 1GB 以上
-- 作業系統: Linux/Windows/MacOS
-
-### 使用者需求
-- 支援 HTML5 的現代瀏覽器
-- Chrome/Firefox/Safari/Edge 最新版本
+```
+lottery/
+├── frontend/               # 前端檔案（部署到 Netlify）
+│   ├── index.html         # 主要網頁
+│   └── netlify.toml       # Netlify 配置
+├── api.py                 # 後端 API 服務
+├── lottery.py             # 抽獎核心邏輯
+├── requirements.txt       # Python 依賴
+└── README.md             # 說明文件
+```
 
 ## 注意事項
 
-- 資料存儲在 SQLite 數據庫中
-- 每個參與者只能被抽中一次，直到執行重置操作
-- 參與者姓名不能重複
-- 建議定期備份資料庫檔案
+1. **CORS 設定**
+   - 後端已啟用 CORS 支援
+   - 允許所有來源的請求
+
+2. **資料持久化**
+   - 資料儲存在 SQLite 資料庫
+   - Render 會在每次部署時重置檔案系統
+   - 建議使用外部資料庫服務（如需要永久儲存）
+
+3. **安全性考慮**
+   - 前端儲存 API 網址在 localStorage
+   - 建議在正式環境中加入適當的認證機制
 
 ## 故障排除
 
-1. **網頁無法訪問**
-   - 確認伺服器是否正常運行
-   - 檢查防火牆設定
-   - 確認端口是否正確開放
+1. **無法連接到 API**
+   - 確認 API 網址是否正確
+   - 檢查後端服務是否正常運行
+   - 確認瀏覽器 Console 中的錯誤訊息
 
-2. **新增參與者失敗**
-   - 檢查名字是否重複
-   - 確認資料庫檔案權限
+2. **部署問題**
+   - Netlify：檢查部署日誌
+   - Render：查看建置和運行日誌
 
-3. **抽獎功能無反應**
-   - 重新整理頁面
+3. **資料不同步**
    - 清除瀏覽器快取
-   - 檢查 JavaScript 是否啟用
+   - 重新載入頁面
+   - 檢查網路請求狀態
 
 ## 技術支援
 
-如遇到技術問題，請：
-1. 查看上述故障排除說明
-2. 檢查系統日誌
-3. 聯繫系統管理員
+如遇到技術問題：
+1. 檢查瀏覽器 Console 的錯誤訊息
+2. 查看後端服務的日誌
+3. 確認網路連接狀態
+4. 檢查 API 網址設定
