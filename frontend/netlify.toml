@@ -1,7 +1,6 @@
 [build]
   publish = "."
   command = ""
-  functions = "lottery/frontend/netlify/functions"
 
 [[redirects]]
   from = "/*"
