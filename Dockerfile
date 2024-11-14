@@ -8,10 +8,12 @@ WORKDIR /app
 COPY requirements.txt .
 COPY lottery.py .
 COPY app.py .
-COPY templates ./templates
+COPY api.py .
+COPY frontend ./frontend
 
 # 安裝應用程式依賴
 RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install flask-cors gunicorn
 
 # 設定環境變數
 ENV FLASK_APP=app.py
@@ -21,7 +23,4 @@ ENV FLASK_ENV=production
 EXPOSE 5000
 
 # 使用 gunicorn 啟動應用程式
-# --bind 0.0.0.0:5000：監聽所有網路介面的 5000 port
-# --workers 4：使用 4 個 worker 處理請求
-# --timeout 120：請求超時時間為 120 秒
 CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "4", "--timeout", "120", "app:app"]
