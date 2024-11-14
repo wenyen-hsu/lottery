@@ -3,6 +3,12 @@
   publish = ""
   command = ""
 
+[context.production.environment]
+  REACT_APP_API_URL = "https://lottery-abck.onrender.com"
+
+[context.development.environment]
+  REACT_APP_API_URL = "http://localhost:5000"
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
