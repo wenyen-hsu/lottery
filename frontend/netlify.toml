@@ -20,3 +20,16 @@
     Access-Control-Allow-Origin = "*"
     Access-Control-Allow-Methods = "GET, POST, OPTIONS"
     Access-Control-Allow-Headers = "Content-Type"
+
+[build.processing.html]
+  pretty_urls = true
+
+[build.processing]
+  skip_processing = false
+
+[build.processing.js]
+  bundle = false
+  minify = false
+
+[[plugins]]
+package = "@netlify/plugin-inject-env-vars-in-html"
