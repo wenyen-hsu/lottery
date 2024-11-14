@@ -126,6 +126,7 @@
 
         function changeClass() {
             currentClass = document.getElementById('classSelect').value;
+            console.log('切換到班級:', currentClass); // 加入日誌
             loadParticipants(); // 切換班級時重新載入參與者列表
             document.getElementById('winners').innerHTML = ''; // 清空中獎名單
         }
@@ -198,9 +199,14 @@
         }
 
         function loadParticipants() {
+            console.log('載入班級參與者:', currentClass); // 加入日誌
             fetch(`${API_URL}/participants?class=${currentClass}`)
                 .then(response => response.json())
                 .then(data => {
+                    if (data.error) {
+                        console.error('載入參與者錯誤:', data.error);
+                        return;
+                    }
                     const participantList = document.getElementById('participantList');
                     participantList.innerHTML = `
                         <ul class="list-group">
@@ -286,6 +292,8 @@
                 return;
             }
 
+            console.log('正在新增班級:', newClassName); // 加入日誌
+
             fetch(`${API_URL}/add_class`, {
                 method: 'POST',
                 headers: {
@@ -293,8 +301,15 @@
                 },
                 body: JSON.stringify({ className: newClassName })
             })
-            .then(response => response.json())
+            .then(response => {
+                console.log('收到回應:', response.status); // 加入日誌
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
+                console.log('回應數據:', data); // 加入日誌
                 if (data.success) {
                     alert('新增班級成功');
                     loadClasses(); // 重新載入班級列表
@@ -305,7 +320,7 @@
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('無法連接到伺服器');
+                alert('無法連接到伺服器: ' + error.message);
             });
         }
 
@@ -344,11 +359,27 @@
                 .then(response => response.json())
                 .then(data => {
                     const select = document.getElementById('classSelect');
+                    // 保存當前選擇的班級
+                    const previousClass = currentClass;
+                    
+                    // 更新班級列表
                     select.innerHTML = data.classes.map(c => 
-                        `<option value="${c.id}" ${c.id === currentClass ? 'selected' : ''}>${c.name}</option>`
+                        `<option value="${c.id}" ${c.id === previousClass ? 'selected' : ''}>${c.name}</option>`
                     ).join('');
+                    
+                    // 如果有班級
                     if (data.classes.length > 0) {
-                        changeClass();
+                        // 如果之前選擇的班級不存在於新列表中，使用第一個班級
+                        if (!data.classes.find(c => c.id === previousClass)) {
+                            currentClass = data.classes[0].id;
+                        }
+                        // 確保 select 的值與 currentClass 一致
+                        select.value = currentClass;
+                        // 載入該班級的參與者
+                        loadParticipants();
+                    } else {
+                        // 如果沒有班級，清空參與者列表
+                        document.getElementById('participantList').innerHTML = '<p>請先新增班級</p>';
                     }
                 })
                 .catch(error => {
@@ -426,9 +457,9 @@
             event.target.value = ''; // 清除檔案選擇
         }
 
-        // 修改初始化函數
+        // 初始化時載入班級列表和參與者
         document.addEventListener('DOMContentLoaded', () => {
-            loadClasses(); // 先載入班級列表
+            loadClasses();
         });
     </script>
 </body>

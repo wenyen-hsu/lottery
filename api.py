@@ -118,25 +118,58 @@ def get_classes():
 
 @app.route('/add_class', methods=['POST'])
 def add_class():
+    """新增班級的路由處理函數"""
     try:
+        # 檢查請求內容
         data = request.get_json()
-        if not data or 'className' not in data:
-            return jsonify({'error': '無效的請求數據'}), 400
+        print(f"收到的數據: {data}")  # 加入日誌
+        
+        if not data:
+            return jsonify({
+                'success': False,
+                'error': '無效的請求數據 - 未收到 JSON 數據'
+            }), 400
+        
+        if 'className' not in data:
+            return jsonify({
+                'success': False,
+                'error': '無效的請求數據 - 缺少 className 欄位'
+            }), 400
         
         class_name = data['className'].strip()
         if not class_name:
-            return jsonify({'error': '請輸入班級名稱'}), 400
-        
-        success = lottery.add_class(class_name)
-        if success:
             return jsonify({
-                'success': True,
-                'message': f'已新增班級：{class_name}'
-            })
-        else:
-            return jsonify({'error': '班級已存在'}), 400
+                'success': False,
+                'error': '請輸入班級名稱'
+            }), 400
+        
+        # 嘗試新增班級
+        try:
+            success = lottery.add_class(class_name)
+            if success:
+                print(f"成功新增班級: {class_name}")  # 加入日誌
+                return jsonify({
+                    'success': True,
+                    'message': f'已新增班級：{class_name}'
+                })
+            else:
+                return jsonify({
+                    'success': False,
+                    'error': '班級已存在'
+                }), 400
+        except Exception as e:
+            print(f"新增班級時發生錯誤: {str(e)}")  # 加入日誌
+            return jsonify({
+                'success': False,
+                'error': f'新增班級失敗: {str(e)}'
+            }), 500
+            
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        print(f"處理請求時發生錯誤: {str(e)}")  # 加入日誌
+        return jsonify({
+            'success': False,
+            'error': f'伺服器錯誤: {str(e)}'
+        }), 500
 
 @app.route('/delete_class', methods=['POST'])
 def delete_class():
