@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from lottery import LotterySystem
 import os
+import sqlite3
 
 app = Flask(__name__)
 CORS(app)  # 啟用 CORS 支援跨域請求
@@ -21,7 +22,10 @@ def index():
 @app.route('/participants', methods=['GET'])
 def get_participants():
     try:
-        participants = lottery.get_all_participants()
+        class_id = request.args.get('class')
+        if not class_id:
+            return jsonify({'error': '未指定班級'}), 400
+        participants = lottery.get_all_participants(class_id)
         return jsonify({'participants': participants})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -34,15 +38,18 @@ def add_participant():
             return jsonify({'error': '無效的請求數據'}), 400
         
         names = data.get('names', '').strip()
+        class_id = data.get('class')
         if not names:
             return jsonify({'error': '請輸入參與者姓名'}), 400
+        if not class_id:
+            return jsonify({'error': '未指定班級'}), 400
         
-        successful, failed = lottery.add_multiple_participants(names)
+        successful, failed = lottery.add_multiple_participants(names, class_id)
         return jsonify({
             'success': True,
             'successful': successful,
             'failed': failed,
-            'participants': lottery.get_all_participants()
+            'participants': lottery.get_all_participants(class_id)
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -55,7 +62,11 @@ def draw():
             return jsonify({'error': '無效的請求數據'}), 400
         
         count = int(data.get('count', 1))
-        winners = lottery.draw_winners(count)
+        class_id = data.get('class')
+        if not class_id:
+            return jsonify({'error': '未指定班級'}), 400
+        
+        winners = lottery.draw_winners(count, class_id)
         return jsonify({
             'success': True,
             'winners': winners
@@ -68,7 +79,12 @@ def draw():
 @app.route('/reset', methods=['POST'])
 def reset():
     try:
-        lottery.reset_selections()
+        data = request.get_json()
+        class_id = data.get('class')
+        if not class_id:
+            return jsonify({'error': '未指定班級'}), 400
+        
+        lottery.reset_selections(class_id)
         return jsonify({'success': True})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -76,7 +92,12 @@ def reset():
 @app.route('/clear_all', methods=['POST'])
 def clear_all():
     try:
-        lottery.clear_all_participants()
+        data = request.get_json()
+        class_id = data.get('class')
+        if not class_id:
+            return jsonify({'error': '未指定班級'}), 400
+        
+        lottery.clear_all_participants(class_id)
         return jsonify({
             'success': True,
             'message': '已清除所有參與者'
@@ -86,6 +107,55 @@ def clear_all():
             'success': False,
             'error': str(e)
         }), 500
+
+@app.route('/classes', methods=['GET'])
+def get_classes():
+    try:
+        classes = lottery.get_all_classes()
+        return jsonify({'classes': classes})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/add_class', methods=['POST'])
+def add_class():
+    try:
+        data = request.get_json()
+        if not data or 'className' not in data:
+            return jsonify({'error': '無效的請求數據'}), 400
+        
+        class_name = data['className'].strip()
+        if not class_name:
+            return jsonify({'error': '請輸入班級名稱'}), 400
+        
+        success = lottery.add_class(class_name)
+        if success:
+            return jsonify({
+                'success': True,
+                'message': f'已新增班級：{class_name}'
+            })
+        else:
+            return jsonify({'error': '班級已存在'}), 400
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/delete_class', methods=['POST'])
+def delete_class():
+    try:
+        data = request.get_json()
+        if not data or 'class' not in data:
+            return jsonify({'error': '無效的請求數據'}), 400
+        
+        class_id = data['class']
+        success = lottery.delete_class(class_id)
+        if success:
+            return jsonify({
+                'success': True,
+                'message': '已刪除班級'
+            })
+        else:
+            return jsonify({'error': '刪除班級失敗'}), 400
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     # 本地開發時使用

@@ -1,1 +1,1 @@
-/*    /index.html   200
+/* /index.html 200   # 將所有請求重定向到 index.html，返回 200 狀態碼

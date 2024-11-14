@@ -1,21 +1,32 @@
 # 抽獎系統前端
 
-## 環境設定
+## 功能說明
 
-### 開發環境
-開發環境下，API 預設指向 `http://localhost:5000`
+- 支援多班級管理
+- 參與者管理
+- 抽獎操作
+- 名單匯入/匯出
 
-### 生產環境
-部署到 Netlify 時，需要在 Netlify 的環境變數設定中配置：
-- REACT_APP_API_URL: 設定為您的 API 網域，例如 "https://your-api-domain.com"
+## 使用說明
 
-## 本地開發
-1. 確保後端 API 服務已經啟動
-2. 使用 Live Server 或其他 HTTP 服務器運行前端
-3. 在瀏覽器中訪問本地服務器地址
+1. 選擇或創建班級
+2. 新增參與者
+3. 進行抽獎
+4. 管理抽獎結果
 
-## 部署說明
-1. 將代碼推送到 GitHub
-2. 在 Netlify 中連接您的 GitHub 倉庫
-3. 設定環境變數 REACT_APP_API_URL
-4. 部署完成後即可使用
+## 開發說明
+
+### 本地開發
+1. 確保後端 API 服務已啟動
+2. 使用 Live Server 運行前端
+3. 修改 API_URL 為本地開發環境網址
+
+### 部署說明
+1. 修改 API_URL 為生產環境網址
+2. 部署到 Netlify 或其他靜態網站托管服務
+
+## 環境變數
+
+- API_URL: API 服務的網址
+  - 開發環境：http://localhost:5000
+  - 生產環境：https://your-api-domain.com

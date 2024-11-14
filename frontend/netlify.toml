@@ -1,16 +1,16 @@
 [build]
-  base = "frontend"
-  publish = ""
-  command = ""
+  base = "frontend"    # 指定前端專案的根目錄
+  publish = ""        # 要發布的目錄，空值表示使用根目錄
+  command = ""        # 構建命令，空值表示不需要構建
 
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+  from = "/*"        # 將所有請求
+  to = "/index.html" # 重定向到 index.html
+  status = 200       # 返回 200 狀態碼
 
 [[headers]]
-  for = "/*"
+  for = "/*"         # 為所有路徑
   [headers.values]
-    Access-Control-Allow-Origin = "*"
-    Access-Control-Allow-Methods = "GET, POST, OPTIONS"
-    Access-Control-Allow-Headers = "Content-Type"
+    Access-Control-Allow-Origin = "*"      # 允許所有來源的跨域請求
+    Access-Control-Allow-Methods = "GET, POST, OPTIONS"  # 允許的 HTTP 方法
+    Access-Control-Allow-Headers = "Content-Type"        # 允許的請求頭
