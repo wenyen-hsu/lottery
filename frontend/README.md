@@ -10,7 +10,7 @@
 4. 配置設定：
    - Base directory: `lottery/frontend`
    - Build command: 留空
-   - Publish directory: `.`
+   - Publish directory: `build`
 
 ### 重要配置檔案
 
