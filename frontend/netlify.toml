@@ -1,6 +1,6 @@
 [build]
   base = "lottery/frontend"
-  publish = "."
+  publish = "build"
   command = ""
 
 [[redirects]]
