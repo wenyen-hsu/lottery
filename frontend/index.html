@@ -32,27 +32,6 @@
         }
         .success { background-color: #d4edda; }
         .error { background-color: #f8d7da; }
-        #apiSettings {
-            background-color: #e9ecef;
-            padding: 20px;
-            margin-bottom: 20px;
-            border-radius: 10px;
-            border: 2px solid #dee2e6;
-        }
-        .api-status {
-            margin-top: 10px;
-            padding: 10px;
-            border-radius: 5px;
-            display: none;
-        }
-        .api-connected {
-            background-color: #d4edda;
-            color: #155724;
-        }
-        .api-disconnected {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
         .danger-zone {
             border: 2px dashed #dc3545;
             padding: 15px;
@@ -65,22 +44,6 @@
     <div class="container">
         <h1 class="mb-4 text-center">抽獎系統</h1>
         
-        <!-- API 設定 -->
-        <div class="card mb-4" id="apiSettings">
-            <div class="card-body">
-                <h5 class="card-title">⚠️ 請先設定 API</h5>
-                <p class="card-text">第一次使用需要設定後端服務位址</p>
-                <div class="mb-3">
-                    <label for="apiUrl" class="form-label">API 網址</label>
-                    <input type="text" class="form-control" id="apiUrl" 
-                           placeholder="請輸入：https://lottery-1-b79x.onrender.com">
-                    <div class="form-text">複製上方網址貼上即可</div>
-                </div>
-                <button onclick="saveApiUrl()" class="btn btn-primary">連接後端服務</button>
-                <div id="apiStatus" class="api-status mt-3"></div>
-            </div>
-        </div>
-
         <!-- 新增參與者 -->
         <div class="card mb-4">
             <div class="card-body">
@@ -126,36 +89,15 @@
     </div>
 
     <script>
-        // 檢查 API 連接狀態
-        function checkApiConnection(apiUrl) {
-            fetch(`${apiUrl}/participants`)
-                .then(response => response.json())
-                .then(data => {
-                    const statusDiv = document.getElementById('apiStatus');
-                    statusDiv.style.display = 'block';
-                    statusDiv.className = 'api-status api-connected';
-                    statusDiv.innerHTML = '✅ 後端服務連接成功！';
-                    document.getElementById('apiSettings').style.display = 'none';
-                    loadParticipants();
-                })
-                .catch(error => {
-                    const statusDiv = document.getElementById('apiStatus');
-                    statusDiv.style.display = 'block';
-                    statusDiv.className = 'api-status api-disconnected';
-                    statusDiv.innerHTML = '❌ 連接失敗，請確認網址是否正確';
-                });
-        }
+        // 使用環境變數獲取 API URL
+        const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
-        // 清除所有參與者
         function clearAllParticipants() {
             if (!confirm('確定要清除所有參與者嗎？此操作無法復原！')) {
                 return;
             }
 
-            const apiUrl = getApiUrl();
-            if (!apiUrl) return;
-
-            fetch(`${apiUrl}/clear_all`, {
+            fetch(`${API_URL}/clear_all`, {
                 method: 'POST'
             })
             .then(response => response.json())
@@ -174,36 +116,9 @@
             });
         }
 
-        // 儲存 API URL
-        function saveApiUrl() {
-            const apiUrl = document.getElementById('apiUrl').value.trim();
-            if (!apiUrl) {
-                alert('請輸入 API 網址');
-                return;
-            }
-            localStorage.setItem('apiUrl', apiUrl);
-            checkApiConnection(apiUrl);
-        }
-
-        // 從 localStorage 獲取 API URL
-        function getApiUrl() {
-            const apiUrl = localStorage.getItem('apiUrl');
-            if (apiUrl) {
-                document.getElementById('apiUrl').value = apiUrl;
-                document.getElementById('apiSettings').style.display = 'none';
-                checkApiConnection(apiUrl);
-                return apiUrl;
-            }
-            document.getElementById('apiSettings').style.display = 'block';
-            return null;
-        }
-
         function addParticipants() {
-            const apiUrl = getApiUrl();
-            if (!apiUrl) return;
-
             const names = document.getElementById('names').value;
-            fetch(`${apiUrl}/add_participant`, {
+            fetch(`${API_URL}/add_participant`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -238,10 +153,7 @@
         }
 
         function loadParticipants() {
-            const apiUrl = getApiUrl();
-            if (!apiUrl) return;
-
-            fetch(`${apiUrl}/participants`)
+            fetch(`${API_URL}/participants`)
                 .then(response => response.json())
                 .then(data => {
                     const participantList = document.getElementById('participantList');
@@ -258,11 +170,8 @@
         }
 
         function drawWinners() {
-            const apiUrl = getApiUrl();
-            if (!apiUrl) return;
-
             const count = document.getElementById('drawCount').value;
-            fetch(`${apiUrl}/draw`, {
+            fetch(`${API_URL}/draw`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -301,10 +210,7 @@
         }
 
         function resetSelection() {
-            const apiUrl = getApiUrl();
-            if (!apiUrl) return;
-
-            fetch(`${apiUrl}/reset`, {
+            fetch(`${API_URL}/reset`, {
                 method: 'POST'
             })
             .then(response => response.json())
@@ -322,14 +228,8 @@
 
         // 初始化
         document.addEventListener('DOMContentLoaded', () => {
-            getApiUrl();
+            loadParticipants();
         });
-
-        // 發送 API 請求
-        fetch(`${process.env.REACT_APP_API_URL}/api/endpoint`)
-            .then(response => response.json())
-            .then(data => console.log(data))
-            .catch(error => console.error('Error:', error));
     </script>
 </body>
 </html>
