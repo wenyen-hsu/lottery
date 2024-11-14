@@ -11,6 +11,7 @@
 [[headers]]
   for = "/*"         # 為所有路徑
   [headers.values]
-    Access-Control-Allow-Origin = "*"      # 允許所有來源的跨域請求
+    Access-Control-Allow-Origin = "https://lottery-abck.onrender.com"  # 明確指定允許的來源
     Access-Control-Allow-Methods = "GET, POST, OPTIONS"  # 允許的 HTTP 方法
-    Access-Control-Allow-Headers = "Content-Type"        # 允許的請求頭
+    Access-Control-Allow-Headers = "Content-Type, Authorization"  # 允許的請求頭
+    Access-Control-Allow-Credentials = "true"  # 允許攜帶認證信息
